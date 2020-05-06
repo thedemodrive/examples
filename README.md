@@ -47,7 +47,7 @@ spec:
         clusterName: DemoDriveCluster
       controlPlaneSecurityEnabled: true
       # The variable to config CA Provider of sidecar. Currently supported: KeyfactorCA, GoogleCA, Citadel
-      caProvider: ""
+      caProvider: "KeyfactorCA"
       # The endpoint of CA Provider
       caAddress: "" # https://<REPLACE_ME>.thedemodrive.com
       # Configure the external CA Provider by Keyfactor.
