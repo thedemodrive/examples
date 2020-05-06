@@ -67,8 +67,8 @@ spec:
     istioctl manifest --set installPackagePath=charts apply -f ./demo-configuration.yaml
     ```
 
-4. Deploy Book-Info microservice example of Istio
-
+4. Deploy Book-Info microservice example of Istio ([references](https://istio.io/docs/examples/bookinfo/))
+  ![Book Info Sample](https://istio.io/docs/examples/bookinfo/withistio.svg)
    - Turn on Istio auto-inject for namespace **default**
 
    ``` bash
