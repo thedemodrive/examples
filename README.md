@@ -117,6 +117,14 @@ kubectl apply -f ./samples/sleep/sleep.yaml -n insidemesh
 
 Verify setup by sending an http request (using curl command) from sleep pod (namespace: insidemesh) to productpage.default:9080:
 
+1. To check certificate from productpage.default is from KeyfactorCA
+
+```bash
+kubectl exec $(kubectl get pod -l app=sleep -n insidemesh -o jsonpath={.items..metadata.name}) -c sleep -n insidemesh -- openssl s_client -showcerts -connect productpage.default:9080
+```
+
+2. Request by curl
+
 ```bash
 kubectl exec $(kubectl get pod -l app=sleep -n insidemesh -o jsonpath={.items..metadata.name}) -c sleep -n insidemesh -- curl http://productpage.default:9080 -s -o /dev/null -w "sleep.insidemesh to http://productpage.default:9080: -> HTTP_STATUS: %{http_code}\n"
 ```
