@@ -98,3 +98,41 @@ spec:
    ``` bash
    kubectl apply -f ./samples/peer-authentication.yaml
    ```
+
+## HOW CAN I VERIFY THAT TRAFFIC IS USING MUTUAL TLS ENCRYPTION?
+
+Turn mTLS strictly for all namespace default
+
+``` bash
+kubectl apply -f ./samples/peer-authentication.yaml
+```
+
+### Create namespace insidemesh and deploy sleep **with sidecars**:
+
+```bash
+kubectl create ns insidemesh
+kubectl label namespace insidemesh istio-injection=enabled
+kubectl apply -f ./samples/sleep/sleep.yaml -n insidemesh
+```
+
+Verify setup by sending an http request (using curl command) from sleep pod (namespace: insidemesh) to productpage.default:9080:
+
+```bash
+kubectl exec $(kubectl get pod -l app=sleep -n insidemesh -o jsonpath={.items..metadata.name}) -c sleep -n insidemesh -- curl http://productpage.default:9080 -s -o /dev/null -w "sleep.insidemesh to http://productpage.default:9080: -> HTTP_STATUS: %{http_code}\n"
+```
+
+> Note: every workload **with sidecard** can access book info services (HTTP_STATUS = 200)
+
+### Create another namespace, outsidemesh, and deploy sleep **without a sidecar**:
+
+```bash
+kubectl create ns outsidemesh
+kubectl apply -f samples/sleep/sleep.yaml -n outsidemesh
+```
+
+Verify setup by sending an http request (using curl command) from sleep pod (namespace: outsidemesh) to productpage.default:9080:
+
+```bash
+kubectl exec $(kubectl get pod -l app=sleep -n outsidemesh -o jsonpath={.items..metadata.name}) -c sleep -n outsidemesh -- curl http://productpage.default:9080 -s -o /dev/null -w "sleep.outsidemesh to http://productpage.default:9080: -> HTTP_STATUS: %{http_code}\n"
+```
+> Note: every workload **without sidecard** can not access book info services (HTTP_STATUS = 000)
