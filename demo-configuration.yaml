@@ -1,0 +1,34 @@
+---
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  namespace: istio-system
+  name: example-integrate-keyfactor-ca
+spec:
+  profile: demo
+  values:
+    global:
+      hub: "thedemodrive" # Name docker.io hub - https://hub.docker.com/orgs/thedemodrive/repositories
+      tag: "preview"
+      imagePullPolicy: "Never"
+      multiCluster:
+        clusterName: DemoDriveCluster
+      controlPlaneSecurityEnabled: true
+      caProvider: "KeyfactorCA"
+      caAddress: ""
+      # Configure the external CA Provider by Keyfactor.
+      keyfactor: 
+        # Name of certificate authorization
+        ca: ""
+        # Using for authentication header
+        authToken: ""
+
+        # API path for enroll new certificate from Keyfactor
+        enrollPath: "/KeyfactorAPI/Enrollment/CSR"
+
+        # Certificate Template for enroll the new one: Default is Istio
+        caTemplate: "Istio"
+
+        # ApiKey from Api Setting
+        appKey: ""
+
