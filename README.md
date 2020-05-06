@@ -64,7 +64,7 @@ spec:
 3. Customizable Install with **Istioctl**
 
     ```bash
-    ./istioctl manifest --set installPackagePath=charts apply -f ./demo-configuration.yaml
+    istioctl manifest --set installPackagePath=charts apply -f ./demo-configuration.yaml
     ```
 
 4. Deploy Book-Info microservice example of Istio
