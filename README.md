@@ -42,22 +42,25 @@ spec:
       hub: "thedemodrive" # https://hub.docker.com/orgs/thedemodrive/repositories
       tag: "preview"
       multiCluster:
+        # ClusterID, in case multi-cluster is enabled
         clusterName: DemoDriveCluster
       controlPlaneSecurityEnabled: true
-      caProvider: "KeyfactorCA"
-      caAddress: "https://<REPLACE_ME>.thedemodrive.com"
+      # The variable to config CA Provider of sidecar. Currently supported: KeyfactorCA, GoogleCA, Citadel
+      caProvider: ""
+      # The endpoint of CA Provider
+      caAddress: "" # https://<REPLACE_ME>.thedemodrive.com
       # Configure the external CA Provider by Keyfactor.
-      keyfactor: 
+      keyfactor:
         # Name of certificate authorization
-        ca: "<REPLACE_ME>"
+        ca: ""
         # Using for authentication header
         authToken: ""
-        # API path for enroll new certificate from Keyfactor
-        enrollPath: "/KeyfactorAPI/Enrollment/CSR"
-        # Certificate Template for enroll the new one: Default is Istio
-        caTemplate: "Istio"
+        # API path for enroll new certificate from Keyfactor. Default: /KeyfactorAPI/Enrollment/CSR
+        enrollPath: ""
+        # Certificate Template for enroll the new one: Default: Istio
+        caTemplate: ""
         # ApiKey from Api Setting
-        appKey: "<APPKEY_REPLACE_HERE>"
+        appKey: ""
 
 ```
  

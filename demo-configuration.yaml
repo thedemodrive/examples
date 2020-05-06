@@ -11,9 +11,12 @@ spec:
       hub: "thedemodrive" # Name docker.io hub - https://hub.docker.com/orgs/thedemodrive/repositories
       tag: "preview"
       multiCluster:
+        # ClusterID, in case multi-cluster is enabled
         clusterName: DemoDriveCluster
       controlPlaneSecurityEnabled: true
-      caProvider: "KeyfactorCA"
+      # The variable to config CA Provider of sidecar. Currently supported: KeyfactorCA, GoogleCA, Citadel
+      caProvider: ""
+      # The endpoint of CA Provider
       caAddress: ""
       # Configure the external CA Provider by Keyfactor.
       keyfactor: 
