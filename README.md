@@ -18,7 +18,7 @@ This is the guideline to set up Istio with KeyfactorCA
 
 ## How to setup Istio integrate with KeyfactorCA
 
-1. Create kubernetes secrets with the root-cert
+1. Create kubernetes secrets with the root-cert (Istiod need root cert to handshake mTLS with IstioAgents)
 
 ```bash
 kubectl create namespace istio-system
