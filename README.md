@@ -16,9 +16,9 @@ This is the guideline to set up Istio with KeyfactorCA
   	- Windows at: `./istio/istioctl-win.exe`
 - Create a file `./root-cert.pem` contains root certificate from Keyfactor
 
-## How to setup Istio integrate with KeyfactorCA
+## Create root certificate
 
-1. Create kubernetes secrets with the root-cert (Istiod need root cert to handshake mTLS with IstioAgents)
+Create kubernetes secrets with the root-cert (Istiod need root cert to handshake mTLS with IstioAgents)
 
 ```bash
 kubectl create namespace istio-system
@@ -27,7 +27,34 @@ kubectl create secret generic cacerts -n istio-system --from-file=./root-cert.pe
 
 > file: ./root-cert.pem is CA pem of KeyfactorCA
 
-2. Update the Keyfactor configuration at `./demo-configuration.yaml`
+## OPTION 1: Setup KeyfactorCA Istio with Kubernetes Secret
+
+1. Create secret `example-keyfactor-secret` to contains Credentials Keyfactor
+
+```yaml
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: keyfactor-secret-example
+  namespace: istio-system
+type: Opaque
+stringData:
+  # Name of certificate authorization
+  caName: ""
+
+  # Using for authentication header
+  authToken: ""
+
+  # Certificate Template for enroll the new one: Default is Istio
+  caTemplate: "Istio"
+
+  # ApiKey from Api Setting
+  appKey: "gf4CHE6R0shrDg=="
+  
+```
+
+2. Update the Keyfactor configuration at `./keyfactor-with-secret.yaml`
 
 ```yaml
 ---
@@ -35,69 +62,146 @@ apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
   namespace: istio-system
-  name: example-integrate-keyfactor-ca
+  name: keyfactor-with-secret
 spec:
   profile: demo
   values:
     global:
-      hub: "thedemodrive" # https://hub.docker.com/orgs/thedemodrive/repositories
-      tag: "preview"
+      hub: thedemodrive
+      tag: final-01
+      imagePullPolicy: "Always"
       multiCluster:
-        # ClusterID, in case multi-cluster is enabled
-        clusterName: DemoDriveCluster
+        clusterName: FinalBuildCluster
       controlPlaneSecurityEnabled: true
-      # The variable to config CA Provider of sidecar. Currently supported: KeyfactorCA, GoogleCA, Citadel
       caProvider: "KeyfactorCA"
-      # The endpoint of CA Provider
-      caAddress: "" # https://<REPLACE_ME>.thedemodrive.com
+      caAddress: "https://kmstech.thedemodrive.com"
       # Configure the external CA Provider by Keyfactor.
       keyfactor:
-        # Name of certificate authorization
-        ca: ""
-        # Using for authentication header
-        authToken: ""
-        # API path for enroll new certificate from Keyfactor. Default: /KeyfactorAPI/Enrollment/CSR
-        enrollPath: ""
-        # Certificate Template for enroll the new one: Default: Istio
-        caTemplate: ""
-        # ApiKey from Api Setting
-        appKey: ""
+        #####
+        # SecretName name of secret contain Keyfactor Credentials
+        # Let empty for using yaml config
+        # Each namespace must have one secret (pod only ready secret within namespace)
+        secretName: "keyfactor-secret-example"
+        ######
+        # Customize metadata fields to carry with CSR enroll certificates
+        # Remove from list if you dont need
+        # Only support for: Cluster, Service, PodName, PodNameSpace, PodIP, TrustDomain.
+        metadata:
+          - name: Cluster # Do not modified it
+            alias: Cluster # Name of custom metadata field on Keyfactor Platform
+          - name: Service
+            alias: Service
+          # - name: PodName
+          #   alias: PodName
+          # - name: PodNamespace
+          #   alias: PodNamespace
+          # - name: PodIP
+          #   alias: PodIP
+          # - name: TrustDomain
+          #   alias: TrustDomain
 
 ```
- 
+
 3. Install with **Istioctl**
 
     ```bash
-    istioctl manifest --set installPackagePath=charts apply -f ./demo-configuration.yaml
+    istioctl manifest --set installPackagePath=installs apply -f ./keyfactor-with-secret.yaml
     ```
 
-4. Deploy Book-Info microservice example of Istio ([references](https://istio.io/docs/examples/bookinfo/))
+## OPTION 2: Setup KeyfactorCA Istio with YAML Config
+
+1. Update the Keyfactor configuration at `./keyfactor-config.yaml`
+
+```yaml
+---
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  namespace: istio-system
+  name: keyfactor-yaml-config
+spec:
+  profile: demo
+  values:
+    global:
+      hub: thedemodrive
+      tag: final-01
+      imagePullPolicy: "Always"
+      multiCluster:
+        clusterName: FinalBuildCluster
+      controlPlaneSecurityEnabled: true
+      caProvider: "KeyfactorCA"
+      caAddress: "https://kmstech.thedemodrive.com"
+      # Configure the external CA Provider by Keyfactor.
+      keyfactor:
+        ########
+        # SecretName name of secret contain Keyfactor Credentials
+        # Let empty for using yaml config
+        # Each namespace must have one secret (pod only ready secret within namespace)
+        secretName: ""
+        # Name of certificate authorization
+        caName: ""
+        # Using for authentication header
+        authToken: ""
+        # ApiKey from Api Setting
+        appKey: ""
+        # Name of Keyfactor template
+        caTemplate: "Istio"
+        ########
+        # Custom metadata fields attached to CSR request CSR enroll certificates
+        # Remove from list if you dont need
+        # Only support for: Cluster, Service, PodName, PodNameSpace, PodIP, TrustDomain.
+        metadata:
+          - name: Cluster # Do not modified it
+            alias: Cluster # Name of custom metadata field on Keyfactor Platform
+          - name: Service
+            alias: Service
+          # - name: PodName
+          #   alias: PodName
+          # - name: PodNamespace
+          #   alias: PodNamespace
+          # - name: PodIP
+          #   alias: PodIP
+          # - name: TrustDomain
+          #   alias: TrustDomain
+
+```
+
+2. Install with **Istioctl**
+
+    ```bash
+    istioctl manifest --set installPackagePath=installs apply -f ./keyfactor-config.yaml
+    ```
+
+## Setup example Microservices
+
+Deploy Book-Info microservice example of Istio ([references](https://istio.io/docs/examples/bookinfo/))
   ![Book Info Sample](https://istio.io/docs/examples/bookinfo/withistio.svg)
-   - Turn on Istio auto-inject for namespace **default**
+
+- Turn on Istio auto-inject for namespace **default**
 
    ``` bash
    kubectl label namespace default istio-injection=enabled
    ```
 
-   - Deploy an example of istio ([Book-Info](https://istio.io/docs/examples/bookinfo/))
+- Deploy an example of istio ([Book-Info](https://istio.io/docs/examples/bookinfo/))
 
    ``` bash
    kubectl apply -f ./samples/bookinfo/platform/kube/bookinfo.yaml
    ```
 
-   - Configure a gateway for the Book-Info sample
+- Configure a gateway for the Book-Info sample
 
    ``` bash
    kubectl apply -f ./samples/bookinfo/networking/bookinfo-gateway.yaml
    ```
 
-   - Configure mTLS destination rules
+- Configure mTLS destination rules
 
    ``` bash
    kubectl apply -f ./samples/bookinfo/networking/destination-rule-all-mtls.yaml
    ```
 
-   - Lock down mutual TLS for the entire mesh
+- Lock down mutual TLS for the entire mesh
 
    ``` bash
    kubectl apply -f ./samples/peer-authentication.yaml
