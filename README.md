@@ -1,4 +1,4 @@
-# Welcome to TheDemoDrive!
+# Welcome to TheDemoDrive
 
 This is the guideline to set up Istio with KeyfactorCA
 
@@ -11,9 +11,9 @@ This is the guideline to set up Istio with KeyfactorCA
 
 - These steps require you to have a cluster running a compatible version of Kubernetes. You can use any supported platform, for example [Minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/) or others specified by the [platform-specific setup instructions](https://istio.io/docs/setup/platform-setup/).
 - Add the  `istioctl`  client to your path (Linux or macOS or Windows):
-  	- OSX at: `./istio/istioctl-osx`
-  	- Linux at: `./istio/istioctl-linux-amd64`
-  	- Windows at: `./istio/istioctl-win.exe`
+  - OSX at: `./release/istioctl-osx`
+  - Linux at: `./release/istioctl-linux-amd64`
+  - Windows at: `./release/istioctl-win.exe`
 - Create a file `./root-cert.pem` contains root certificate from Keyfactor
 
 ## Create root certificate
@@ -207,14 +207,15 @@ Deploy Book-Info microservice example of Istio ([references](https://istio.io/do
    kubectl apply -f ./samples/peer-authentication.yaml
    ```
 
-## HOW TO VERIFY THE TRAFFIC IS USING MUTUAL TLS ENCRYPTION?
+## HOW TO VERIFY THE TRAFFIC IS USING MUTUAL TLS ENCRYPTION
+
 Lock down mutual TLS for the entire mesh
 
 ``` bash
 kubectl apply -f ./samples/peer-authentication.yaml
 ```
 
-### Create the namespace "insidemesh" and deploy a sleep container **with sidecars**:
+### Create the namespace "insidemesh" and deploy a sleep container **with sidecars**
 
 ```bash
 kubectl create ns insidemesh
@@ -238,7 +239,7 @@ kubectl exec $(kubectl get pod -l app=sleep -n insidemesh -o jsonpath={.items..m
 
 > Note: every workload **deployed with sidecar** can access Book Info services (HTTP_STATUS = 200)
 
-### Create another namespace "outsidemesh" and deploy a sleep container **without a sidecar**:
+### Create another namespace "outsidemesh" and deploy a sleep container **without a sidecar**
 
 ```bash
 kubectl create ns outsidemesh
@@ -250,4 +251,5 @@ Verify the setup by sending an http request (using curl command) from sleep pod 
 ```bash
 kubectl exec $(kubectl get pod -l app=sleep -n outsidemesh -o jsonpath={.items..metadata.name}) -c sleep -n outsidemesh -- curl http://productpage.default:9080 -s -o /dev/null -w "sleep.outsidemesh to http://productpage.default:9080: -> HTTP_STATUS: %{http_code}\n"
 ```
+
 > Note: every workload **deployed without sidecar** cannot access Book Info services (HTTP_STATUS = 000)
