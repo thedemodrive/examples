@@ -1,6 +1,6 @@
 # Welcome to Istio Build Guideline
 
-This guidelines assumse that you use Linux or Mac or Window Sub System to build (Windows OS is not support)
+These guidelines use only for Linux, Mac or Window Sub System (Windows OS is not supported)
 
 Istio components only have few external dependencies you need to set up before being able to build and run the code.
 
@@ -11,7 +11,7 @@ Istio components only have few external dependencies you need to set up before b
 
 ## Setting up Go
 
-Many Istio components are written in the Go programming language. To build, you'll need a Go development environment. If you haven't set up a Go development environment, please follow these instructions to install the Go tools.
+Many Istio components are written in the Go programming language. To build, you'll need a Go development environment. If you haven't set up a Go development environment, please follow [these instructions](https://golang.org/doc/install) to install the Go tools.
 
 Istio currently builds with Go 1.14
 
