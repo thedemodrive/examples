@@ -51,7 +51,7 @@ stringData:
   caTemplate: "Istio"
 
   # ApiKey from Api Setting
-  appKey: "gf4CHE6R0shrDg=="
+  appKey: ""
   
 ```
 
