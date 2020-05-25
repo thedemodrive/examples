@@ -1,6 +1,6 @@
 # Welcome to Istio Build Guideline
 
-This guidelines assumse that you use Linux or Mac or Window Sub System to build (Windown OS is not support)
+This guidelines assumse that you use Linux or Mac or Window Sub System to build (Windows OS is not support)
 
 Istio components only have few external dependencies you need to set up before being able to build and run the code.
 
