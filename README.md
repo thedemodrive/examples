@@ -4,6 +4,7 @@ This is the guideline to set up Istio with KeyfactorCA
 
 ## Resources
 
+- Build Instructions: [Link](https://github.com/thedemodrive/examples/blob/master/BUILD.md)
 - Code repository: [https://github.com/thedemodrive/istio](https://github.com/thedemodrive/istio)
 - Docker images: [https://hub.docker.com/orgs/thedemodrive/repositories](https://hub.docker.com/orgs/thedemodrive/repositories)
 
