@@ -11,10 +11,11 @@ This is the guideline to set up Istio with KeyfactorCA
 ## Prerequisite
 
 - These steps require you to have a cluster running a compatible version of Kubernetes. You can use any supported platform, for example [Minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/) or others specified by the [platform-specific setup instructions](https://istio.io/docs/setup/platform-setup/).
-- Add the  `istioctl`  client to your path (Linux or macOS or Windows):
-  - OSX at: `./release/istioctl-osx`
-  - Linux at: `./release/istioctl-linux-amd64`
-  - Windows at: `./release/istioctl-win.exe`
+- Download binary file at: [releases/tag/0.0.1](https://github.com/thedemodrive/examples/releases/tag/0.0.1)
+- Add the `istioctl` client to your path (Linux or macOS or Windows):
+  - OSX: `istioctl-osx`
+  - Linux: `istioctl-linux-amd64`
+  - Windows: `istioctl-win.exe`
 - Create a file `./root-cert.pem` contains root certificate from Keyfactor
 
 ## Create root certificate
@@ -52,7 +53,6 @@ stringData:
 
   # ApiKey from Api Setting
   appKey: ""
-  
 ```
 
 2. Update the Keyfactor configuration at `./keyfactor-with-secret.yaml`
@@ -100,14 +100,13 @@ spec:
           #   alias: PodIP
           # - name: TrustDomain
           #   alias: TrustDomain
-
 ```
 
 3. Install with **Istioctl**
 
-    ```bash
-    istioctl manifest --set installPackagePath=installs apply -f ./keyfactor-with-secret.yaml
-    ```
+   ```bash
+   istioctl manifest --set installPackagePath=installs apply -f ./keyfactor-with-secret.yaml
+   ```
 
 ## OPTION 2: Setup KeyfactorCA Istio with YAML Config
 
@@ -164,55 +163,54 @@ spec:
           #   alias: PodIP
           # - name: TrustDomain
           #   alias: TrustDomain
-
 ```
 
 2. Install with **Istioctl**
 
-    ```bash
-    istioctl manifest --set installPackagePath=installs apply -f ./keyfactor-config.yaml
-    ```
+   ```bash
+   istioctl manifest --set installPackagePath=installs apply -f ./keyfactor-config.yaml
+   ```
 
 ## Setup example Microservices
 
 Deploy Book-Info microservice example of Istio ([references](https://istio.io/docs/examples/bookinfo/))
-  ![Book Info Sample](https://istio.io/docs/examples/bookinfo/withistio.svg)
+![Book Info Sample](https://istio.io/docs/examples/bookinfo/withistio.svg)
 
 - Turn on Istio auto-inject for namespace **default**
 
-   ``` bash
-   kubectl label namespace default istio-injection=enabled
-   ```
+  ```bash
+  kubectl label namespace default istio-injection=enabled
+  ```
 
 - Deploy an example of istio ([Book-Info](https://istio.io/docs/examples/bookinfo/))
 
-   ``` bash
-   kubectl apply -f ./samples/bookinfo/platform/kube/bookinfo.yaml
-   ```
+  ```bash
+  kubectl apply -f ./samples/bookinfo/platform/kube/bookinfo.yaml
+  ```
 
 - Configure a gateway for the Book-Info sample
 
-   ``` bash
-   kubectl apply -f ./samples/bookinfo/networking/bookinfo-gateway.yaml
-   ```
+  ```bash
+  kubectl apply -f ./samples/bookinfo/networking/bookinfo-gateway.yaml
+  ```
 
 - Configure mTLS destination rules
 
-   ``` bash
-   kubectl apply -f ./samples/bookinfo/networking/destination-rule-all-mtls.yaml
-   ```
+  ```bash
+  kubectl apply -f ./samples/bookinfo/networking/destination-rule-all-mtls.yaml
+  ```
 
 - Lock down mutual TLS for the entire mesh
 
-   ``` bash
-   kubectl apply -f ./samples/peer-authentication.yaml
-   ```
+  ```bash
+  kubectl apply -f ./samples/peer-authentication.yaml
+  ```
 
 ## HOW TO VERIFY THE TRAFFIC IS USING MUTUAL TLS ENCRYPTION
 
 Lock down mutual TLS for the entire mesh
 
-``` bash
+```bash
 kubectl apply -f ./samples/peer-authentication.yaml
 ```
 
