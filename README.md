@@ -11,7 +11,7 @@ This is the guideline to set up Istio with KeyfactorCA
 ## Prerequisite
 
 - These steps require you to have a cluster running a compatible version of Kubernetes. You can use any supported platform, for example [Minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/) or others specified by the [platform-specific setup instructions](https://istio.io/docs/setup/platform-setup/).
-- Download binary file at: [releases/tag/0.0.1](https://github.com/thedemodrive/examples/releases/tag/0.0.1)
+- Download binary file at: [**Click here to download setup binary**](https://github.com/thedemodrive/examples/releases/tag/0.0.1)
 - Add the `istioctl` client to your path (Linux or macOS or Windows):
   - OSX: `istioctl-osx`
   - Linux: `istioctl-linux-amd64`
