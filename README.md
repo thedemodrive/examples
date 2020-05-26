@@ -13,9 +13,9 @@ This is the guideline to set up Istio with KeyfactorCA
 - These steps require you to have a cluster running a compatible version of Kubernetes. You can use any supported platform, for example [Minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/) or others specified by the [platform-specific setup instructions](https://istio.io/docs/setup/platform-setup/).
 - Download binary file at: [**Click here to download setup binary**](https://github.com/thedemodrive/examples/releases/tag/0.0.1)
 - Add the `istioctl` client to your path (Linux or macOS or Windows):
-  - OSX: `istioctl-osx`
-  - Linux: `istioctl-linux-amd64`
-  - Windows: `istioctl-win.exe`
+  - OSX: [`istioctl-osx`](https://github.com/thedemodrive/examples/releases/download/0.0.1/istioctl-osx)
+  - Linux: [`istioctl-linux-amd64`](https://github.com/thedemodrive/examples/releases/download/0.0.1/istioctl-linux-amd64)
+  - Windows: [`istioctl-win.exe`](https://github.com/thedemodrive/examples/releases/download/0.0.1/istioctl-win.exe)
 - Create a file `./root-cert.pem` contains root certificate from Keyfactor
 
 ## Create root certificate
