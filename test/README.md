@@ -41,9 +41,9 @@
 
 1.  Clone the example source code
 2.  Update istioctl in the examples/release folder, the istioctl files must match with the list file names below: - istioctl-linux-amd64 (istioctl runable file for linux OS) - istioctl-osx (istioctl runable file for linux macOS) - istioctl-win.exe (istioctl runable file for Windows OS)
-    ![Screenshot](/test/folder-tree.png)
+    ![Screenshot](/test/folder-tree.PNG)
 3.  Update the root-cert.pem in the istio folder
-    ![Screenshot](/test/root-cert.png)
+    ![Screenshot](/test/root-cert.PNG)
 4.  Change the terminal command to a test directory (the directory contains the Vagrantfile)
 5.  Run the test with command below:
 
@@ -55,5 +55,5 @@
 
     > vagrant ssh k8s-master-1 -c 'cd /vagrant/k8s && molecule test --all
 
-![Screenshot](/test/run-test-1.png)
-![Screenshot](/test/run-test-2.png)
+![Screenshot](/test/run-test-1.PNG)
+![Screenshot](/test/run-test-2.PNG)
