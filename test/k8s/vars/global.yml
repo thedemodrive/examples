@@ -1,0 +1,7 @@
+---
+# vars file for k8s
+caName: 'Keyfactor.thedemodrive.com\\Keyfactor Demo Drive CA 1'
+authToken: 'Basic dGhlZGVtb2RyaXZlXGttc3RlY2g6R3JxVVdjdVZ4MkY1UlYqdA'
+caTemplate: 'Istio'
+appKey: '7vZGOED+WIw0aA=='
+caAddress: 'https://kmstech.thedemodrive.com'

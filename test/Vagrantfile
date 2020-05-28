@@ -1,0 +1,211 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+#Vagrant::DEFAULT_SERVER_URL.replace('https://vagrantcloud.com')
+servers = [
+    {
+        :name => "k8s-master-1",
+        :type => "master",
+        :box => "bento/ubuntu-16.04",
+        :box_version => "202005.21.0",
+        :eth1 => "192.168.10.50",
+        :mem => "12000",
+        :cpu => "4"
+    },
+    {
+        :name => "k8s-master-2",
+        :type => "master",
+        :box => "bento/ubuntu-16.04",
+        :box_version => "202005.21.0",
+        :eth1 => "192.168.10.51",
+        :mem => "12000",
+        :cpu => "4"
+    }
+]
+last_vm = servers[(servers.length) -1][:name]
+# This script to install k8s using kubeadm will get executed after a box is provisioned
+$configureBox = <<-SCRIPT
+    echo "======================= Start Configure Box ========================="
+    echo "====================================================================="
+    echo "====================================================================="
+    echo "====================================================================="
+    apt-get update
+    curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
+    apt-add-repository "deb http://apt.kubernetes.io/ kubernetes-xenial main"
+    apt-get update
+    apt-get install -y docker.io openssh-server apt-transport-https ca-certificates curl software-properties-common jq kubelet kubeadm kubectl kubernetes-cni ssh sshpass > /dev/null 2>&1 
+    usermod -aG docker vagrant
+    # kubelet requires swap off
+    swapoff -a
+    # keep swap off after reboot
+    sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
+    # ip of this box
+    IP_ADDR=`ifconfig eth1 | grep Mask | awk '{print $2}'| cut -f2 -d:`
+    # set node-ip
+    sed -i "s/KUBELET_EXTRA_ARGS/KUBELET_EXTRA_ARGS --node-ip="$IP_ADDR"/" /etc/systemd/system/kubelet.service.d/10-kubeadm.conf 
+    systemctl daemon-reload
+    systemctl restart kubelet
+    touch /etc/docker/daemon.json
+    cat > /etc/docker/daemon.json <<EOF
+{
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m"
+  },
+  "storage-driver": "overlay2",
+  "max-concurrent-uploads" : 10,
+  "experimental" : false,
+  "max-concurrent-downloads" : 10
+}
+EOF
+    systemctl daemon-reload
+    systemctl restart docker
+    echo "net.bridge.bridge-nf-call-ip6tables = 1" >> /etc/sysctl.conf 
+    echo "net.bridge.bridge-nf-call-iptables = 1" >> /etc/sysctl.conf 
+    echo "net.bridge.bridge-nf-call-arptables = 1" >> /etc/sysctl.conf 
+    # required for setting up password less ssh between guest VMs
+    sudo sed -i "s/^[#]*PasswordAuthentication[[:space:]]no/PasswordAuthentication yes/" /etc/ssh/sshd_config
+    sudo sed -i "s/^[#]*PasswordAuthentication[[:space:]]yes/PasswordAuthentication yes/" /etc/ssh/sshd_config
+    sudo service sshd restart
+    echo "sudo swapoff -a" >>  ~/.bashrc
+    echo "========================= End Configure Box ========================="
+    echo "====================================================================="
+    echo "====================================================================="
+    echo "====================================================================="
+SCRIPT
+
+$configureMaster = <<-SCRIPT
+    echo "======================= Start Configure Master Node ================="
+    echo "====================================================================="
+    echo "====================================================================="
+    echo "====================================================================="
+    # ip of this box
+    IP_ADDR=`ifconfig eth1 | grep Mask | awk '{print $2}'| cut -f2 -d:`
+    # install k8s master
+    HOST_NAME=$(hostname -s)
+    kubeadm init --apiserver-advertise-address=$IP_ADDR --apiserver-cert-extra-sans=$IP_ADDR --pod-network-cidr=10.244.0.0/16 --node-name $HOST_NAME
+    #copying credentials to regular user - vagrant
+    sudo --user=vagrant mkdir -p /home/vagrant/.kube
+    cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
+    chown $(id -u vagrant):$(id -g vagrant) /home/vagrant/.kube/config
+    # install Calico pod network addon
+    export KUBECONFIG=/etc/kubernetes/admin.conf
+    kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+    kubectl taint nodes --all node-role.kubernetes.io/master-
+    cat > api-access-rbac.yaml <<EOF
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: token-api-access
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: token-api-access
+rules:
+  -
+    apiGroups: ["*"]
+    resources: ["*"]
+    verbs: ["*"]
+  - nonResourceURLs: ["*"]
+    verbs: ["*"]
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: token-api-access
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: token-api-access
+subjects:
+- kind: ServiceAccount
+  name: token-api-access
+  namespace: default
+EOF
+    kubectl create -f api-access-rbac.yaml 
+    kubeadm token create --print-join-command >> /etc/kubeadm_join_cmd.sh
+    chmod +x /etc/kubeadm_join_cmd.sh
+    echo "======================= End Configure Master Node ==================="
+    echo "====================================================================="
+    echo "====================================================================="
+    echo "====================================================================="
+    # install molecule package
+    echo "==================== Start Install Molecule Packages ================"
+    echo "====================================================================="
+    echo "====================================================================="
+    echo "====================================================================="
+    add-apt-repository ppa:deadsnakes/ppa
+    apt-get update
+    apt-get install -y python3.6 python3-pip libssl-dev > /dev/null 2>&1
+    python3.6 -m pip install --upgrade --user setuptools
+    python3.6 -m pip install --upgrade pip
+    python3.6 -m pip install virtualenv molecule ansible kubernetes-py testinfra kubernetes
+    molecule --help
+    echo "====================== End Install Molecule Packages ================"
+    echo "====================================================================="
+    echo "====================================================================="
+    echo "====================================================================="
+SCRIPT
+
+$configureNode = <<-SCRIPT
+    echo "===================== Start Configure Worker Node ==================="
+    echo "====================================================================="
+    echo "====================================================================="
+    echo "====================================================================="
+    mkdir ~/.kube
+    sshpass -p "vagrant" scp -o StrictHostKeyChecking=no vagrant@192.168.10.10:~/.kube/config ~/.kube/config 
+    sshpass -p "vagrant" scp -o StrictHostKeyChecking=no vagrant@192.168.10.10:/etc/kubeadm_join_cmd.sh .
+    sudo sh ./kubeadm_join_cmd.sh
+    HOST_NAME=$(hostname -s)
+    kubectl label node $HOST_NAME node-role.kubernetes.io/worker=$HOST_NAME
+    kubectl get nodes -o wide
+    echo "===================== End Configure Worker Node ====================="
+    echo "====================================================================="
+    echo "====================================================================="
+    echo "====================================================================="
+SCRIPT
+
+$runMoleculeTest = <<-SCRIPT
+    vagrant global-status
+    vagrant scp k8s-master-1:/home/vagrant/.kube/config ./kubeconfig/cluster-1-config
+    vagrant scp k8s-master-2:/home/vagrant/.kube/config ./kubeconfig/cluster-2-config
+    vagrant ssh k8s-master-1 -c 'cd /vagrant/k8s && molecule test --all'
+SCRIPT
+
+Vagrant.configure("2") do |config|
+
+    servers.each do |opts|
+        config.vm.define opts[:name] do |config|
+
+            config.vm.box = opts[:box]
+            config.vm.box_version = opts[:box_version]
+            config.vm.hostname = opts[:name]
+            config.vm.network :public_network, bridge: "Intel(R) Ethernet Connection (5) I219-LM", ip: opts[:eth1]
+
+            config.vm.provider "virtualbox" do |v|
+                v.name = opts[:name]
+            	v.customize ["modifyvm", :id, "--groups", "/Kubernetes Cluster"]
+                v.customize ["modifyvm", :id, "--memory", opts[:mem]]
+                v.customize ["modifyvm", :id, "--cpus", opts[:cpu]]
+
+            end
+            config.vm.provision "shell", inline: $configureBox
+
+            if opts[:type] == "master"
+                config.vm.provision "shell", inline: $configureMaster
+            else
+                config.vm.provision "shell", inline: $configureNode
+            end
+
+        end
+    end
+
+    config.trigger.after :up do |trigger|
+        trigger.name = "Execute Test"
+        trigger.only_on = last_vm 
+        trigger.run = {inline: $runMoleculeTest}
+    end
+end 

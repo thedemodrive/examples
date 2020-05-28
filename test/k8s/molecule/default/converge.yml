@@ -1,0 +1,47 @@
+---
+- name: Converge
+  hosts: master-1
+  gather_facts: true
+  tasks:
+    - name: "Include global tasks"
+      include_role:
+        name: "k8s"  
+    - name: Load variable file
+      include_vars:
+        dir: ../../vars
+    - name: Get cluster info 
+      command: kubectl cluster-info
+      register: kubectl
+      changed_when: false
+    - name: "Create namespace {{ item }}"
+      command: "{{ item }}"
+      register: kubectl
+      changed_when: false
+      loop:
+        - kubectl create namespace foo
+        - kubectl create namespace bar
+        - kubectl create namespace legacy
+    - name: "Create secret object in {{ item }} namespace"
+      command: "{{ item }}"
+      register: kubectl
+      changed_when: false
+      loop:
+        - kubectl apply -f /vagrant/k8s/templates/keyfactor-secret-run.yaml -n foo 
+        - kubectl apply -f /vagrant/k8s/templates/keyfactor-secret-run.yaml -n bar
+        - kubectl apply -f /vagrant/k8s/templates/keyfactor-secret-run.yaml -n legacy
+    - name: "Install httbin test service {{ item }}"
+      command:  "{{ item }}"
+      register: kubectl
+      changed_when: false
+      loop:
+        - kubectl apply -f /vagrant/k8s/templates/httpbin.yaml -n foo
+        - kubectl apply -f /vagrant/k8s/templates/httpbin.yaml -n bar
+        - kubectl apply -f /vagrant/k8s/templates/httpbin.yaml -n legacy
+    - name: "Install sleep test service {{ item }}"
+      command:  "{{ item }}"
+      register: kubectl
+      changed_when: false
+      loop:
+        - kubectl apply -f /vagrant/k8s/templates/sleep.yaml -n foo
+        - kubectl apply -f /vagrant/k8s/templates/sleep.yaml -n bar
+        - kubectl apply -f /vagrant/k8s/templates/sleep.yaml -n legacy

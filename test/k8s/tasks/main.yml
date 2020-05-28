@@ -1,0 +1,137 @@
+- name: "Clean all {{ item }} namespace"
+  command: "{{ item }}"
+  changed_when: false
+  loop:
+    - kubectl delete namespace foo
+    - kubectl delete namespace bar
+    - kubectl delete namespace legacy
+    - kubectl delete namespace istio-system
+  register: kubectl
+  no_log: True
+  ignore_errors: yes
+
+- name: Load variable file
+  include_vars:
+    dir: ../vars
+
+- name: Clone secret template
+  copy:
+    src: /vagrant/k8s/templates/keyfactor-secret.yaml 
+    dest: /vagrant/k8s/templates/keyfactor-secret-run.yaml 
+  changed_when: false
+
+- name: Clone cluster with secret template
+  copy:
+    src: /vagrant/k8s/templates/cluster-with-secret.yaml 
+    dest: /vagrant/k8s/templates/cluster-with-secret-run.yaml 
+  changed_when: false
+
+- name: Clone single cluster template
+  copy:
+    src: /vagrant/k8s/templates/single-cluster.yaml 
+    dest: /vagrant/k8s/templates/single-cluster-run.yaml 
+  changed_when: false
+
+- name: Clone single cluster-a template
+  copy:
+    src: /vagrant/k8s/templates/single-cluster.yaml 
+    dest: /vagrant/k8s/templates/single-cluster-a-run.yaml 
+  changed_when: false
+
+- name: Clone single cluster-b template
+  copy:
+    src: /vagrant/k8s/templates/single-cluster.yaml 
+    dest: /vagrant/k8s/templates/single-cluster-b-run.yaml 
+  changed_when: false
+
+- name: "Replace variable values in secret file"
+  become: yes
+  become_user: root
+  lineinfile:
+    path: /vagrant/k8s/templates/keyfactor-secret-run.yaml 
+    # Line to Search/Match against
+    regexp: '{{item.From}}'
+    # Line to Replace with
+    line: '{{item.To}}'
+    state: present
+  with_items:
+    - { From: '__CA__NAME__', To: "  caName: \"{{ caName }}\""}
+    - { From: '__AUTH__TOKEN__', To: "  authToken: \"{{ authToken }}\""}
+    - { From: '__CA__TEMPLATE__', To: "  caTemplate: \"{{ caTemplate }}\""}
+    - { From: '__APP__KEY__', To: "  appKey: \"{{ appKey }}\""  }
+  changed_when: false
+
+- name: "Replace variable values in cluster with secret"
+  become: yes
+  become_user: root
+  lineinfile:
+    path: /vagrant/k8s/templates/cluster-with-secret-run.yaml  
+    # Line to Search/Match against
+    regexp: '{{item.From}}'
+    # Line to Replace with
+    line: '{{item.To}}'
+    state: present
+  with_items:
+    - { From: '__CA__ADDR__', To: "      caAddress: \"{{ caAddress }}\""}
+    - { From: '__CA__NAME__', To: "        caName: \"{{ caName }}\""}
+    - { From: '__AUTH__TOKEN__', To: "        authToken: \"{{ authToken }}\""}
+    - { From: '__CA__TEMPLATE__', To: "        caTemplate: \"{{ caTemplate }}\""}
+    - { From: '__APP__KEY__', To: "        appKey: \"{{ appKey }}\""  }
+  changed_when: false
+
+- name: "Replace variable values in single cluster"
+  become: yes
+  become_user: root
+  lineinfile:
+    path: /vagrant/k8s/templates/single-cluster-run.yaml  
+    # Line to Search/Match against
+    regexp: '{{item.From}}'
+    # Line to Replace with
+    line: '{{item.To}}'
+    state: present
+  with_items:
+    - { From: '__CLUSTER__NAME__', To: "        clusterName: kms.cluster.single"}
+    - { From: '__CA__ADDR__', To: "      caAddress: \"{{ caAddress }}\""}
+    - { From: '__CA__NAME__', To: "        caName: \"{{ caName }}\""}
+    - { From: '__AUTH__TOKEN__', To: "        authToken: \"{{ authToken }}\""}
+    - { From: '__CA__TEMPLATE__', To: "        caTemplate: \"{{ caTemplate }}\""}
+    - { From: '__APP__KEY__', To: "        appKey: \"{{ appKey }}\""  }
+  changed_when: false
+
+- name: "Replace variable values in single cluster-a"
+  become: yes
+  become_user: root
+  lineinfile:
+    path: /vagrant/k8s/templates/single-cluster-a-run.yaml  
+    # Line to Search/Match against
+    regexp: '{{item.From}}'
+    # Line to Replace with
+    line: '{{item.To}}'
+    state: present
+  with_items:
+    - { From: '__CLUSTER__NAME__', To: "        clusterName: kms.cluster.a"}
+    - { From: '__CA__ADDR__', To: "      caAddress: \"{{ caAddress }}\""}
+    - { From: '__CA__NAME__', To: "        caName: \"{{ caName }}\""}
+    - { From: '__AUTH__TOKEN__', To: "        authToken: \"{{ authToken }}\""}
+    - { From: '__CA__TEMPLATE__', To: "        caTemplate: \"{{ caTemplate }}\""}
+    - { From: '__APP__KEY__', To: "        appKey: \"{{ appKey }}\""  }
+  changed_when: false
+
+- name: "Replace variable values in single cluster-b"
+  become: yes
+  become_user: root
+  lineinfile:
+    path: /vagrant/k8s/templates/single-cluster-b-run.yaml  
+    # Line to Search/Match against
+    regexp: '{{item.From}}'
+    # Line to Replace with
+    line: '{{item.To}}'
+    state: present
+  with_items:
+    - { From: '__CLUSTER__NAME__', To: "        clusterName: kms.cluster.b"}
+    - { From: '__CA__ADDR__', To: "      caAddress: \"{{ caAddress }}\""}
+    - { From: '__CA__NAME__', To: "        caName: \"{{ caName }}\""}
+    - { From: '__AUTH__TOKEN__', To: "        authToken: \"{{ authToken }}\""}
+    - { From: '__CA__TEMPLATE__', To: "        caTemplate: \"{{ caTemplate }}\""}
+    - { From: '__APP__KEY__', To: "        appKey: \"{{ appKey }}\""  }
+  changed_when: false
