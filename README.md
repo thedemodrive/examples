@@ -75,7 +75,7 @@ spec:
         clusterName: FinalBuildCluster
       controlPlaneSecurityEnabled: true
       caProvider: "KeyfactorCA"
-      caAddress: "https://kmstech.thedemodrive.com"
+      caAddress: ""
       # Configure the external CA Provider by Keyfactor.
       keyfactor:
         #####
@@ -130,7 +130,7 @@ spec:
         clusterName: FinalBuildCluster
       controlPlaneSecurityEnabled: true
       caProvider: "KeyfactorCA"
-      caAddress: "https://kmstech.thedemodrive.com"
+      caAddress: ""
       # Configure the external CA Provider by Keyfactor.
       keyfactor:
         ########
