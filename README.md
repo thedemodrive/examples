@@ -33,6 +33,7 @@ kubectl create secret generic cacerts -n istio-system --from-file=./root-cert.pe
 
 1. Create secret `example-keyfactor-secret` to contains Credentials Keyfactor
 
+Update Keyfactor Credentials within file: `./keyfactor-secret-example.yaml` 
 ```yaml
 ---
 apiVersion: v1
@@ -53,6 +54,11 @@ stringData:
 
   # ApiKey from Api Setting
   appKey: ""
+```
+Create Kubernetes secret with command:
+
+```bash
+kubectl apply -f ./keyfactor-secret-example.yaml
 ```
 
 2. Update the Keyfactor configuration at `./keyfactor-with-secret.yaml`
@@ -88,8 +94,10 @@ spec:
         # Remove from list if you dont need
         # Only support for: Cluster, Service, PodName, PodNameSpace, PodIP, TrustDomain.
         metadata:
-          - name: Cluster # Do not modified it
-            alias: Cluster # Name of custom metadata field on Keyfactor Platform
+          # Cluster ClusterID or ClusterName of Istio Mesh
+          - name: Cluster # Name of field in Istio, do not change it
+            alias: Cluster # Name of custom metadata field on Keyfactor Platform to mapping
+          # Service name of service
           - name: Service
             alias: Service
           # - name: PodName
@@ -98,6 +106,7 @@ spec:
           #   alias: PodNamespace
           # - name: PodIP
           #   alias: PodIP
+          # TrustDomain is Kubernetes's domain, default value is cluster.local
           # - name: TrustDomain
           #   alias: TrustDomain
 ```
